@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Start-Process powershell -ArgumentList \"-NoExit -Command `\"cd d:\\\\demo\\\\phone-store\\\\client; npm run dev`\"\" -WindowStyle Normal; Start-Sleep -Seconds 5; Test-NetConnection localhost -Port 5173 -InformationLevel Quiet -WarningAction SilentlyContinue)"
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npm install *)",
+      "PowerShell(Get-Service -Name \"MongoDB\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Process mongod -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-ChildItem \"C:\\\\\", \"D:\\\\\", \"$env:LOCALAPPDATA\" -Filter \"mongod.exe\" -Recurse -ErrorAction SilentlyContinue -Depth 5 | Select-Object FullName)",
+      "PowerShell(Test-NetConnection -ComputerName localhost -Port 27017 -InformationLevel Quiet -WarningAction SilentlyContinue)",
+      "PowerShell(winget --version)"
+    ]
+  }
+}
