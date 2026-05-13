@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const paymentSchema = new mongoose.Schema({
   orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  method: { type: String, enum: ['cod', 'bank_transfer', 'momo', 'zalopay', 'vnpay'], required: true },
+  method: { type: String, enum: ['cod', 'bank_transfer', 'momo', 'zalopay', 'vnpay', 'wallet'], required: true },
   amount: { type: Number, required: true },
   status: { type: String, enum: ['pending', 'success', 'failed', 'cancelled'], default: 'pending' },
   transactionId: { type: String },

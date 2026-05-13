@@ -17,6 +17,9 @@ const StockLog = require('./StockLog');
 const FlashSale = require('./FlashSale');
 const { ChatSession, ChatMessage } = require('./ChatSession');
 const AuditLog = require('./AuditLog');
+const WalletTransaction = require('./WalletTransaction');
+const TopupRequest = require('./TopupRequest');
+const WithdrawalRequest = require('./WithdrawalRequest');
 
 module.exports = {
   User, OTP, Category, Brand,
@@ -28,4 +31,5 @@ module.exports = {
   StockLog, FlashSale,
   ChatSession, ChatMessage,
   AuditLog,
+  WalletTransaction, TopupRequest, WithdrawalRequest,
 };

@@ -25,7 +25,7 @@ const orderSchema = new mongoose.Schema({
   shippingFee: { type: Number, default: 0 },
   shippingPartner: { type: String, enum: ['GHN', 'GHTK', 'ViettelPost', 'store_pickup'], default: 'GHN' },
   trackingCode: { type: String },
-  paymentMethod: { type: String, enum: ['cod', 'bank_transfer', 'momo', 'zalopay', 'vnpay'], default: 'cod' },
+  paymentMethod: { type: String, enum: ['cod', 'bank_transfer', 'momo', 'zalopay', 'vnpay', 'wallet'], default: 'cod' },
   paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
   subtotal: { type: Number, required: true },
   discountAmount: { type: Number, default: 0 },

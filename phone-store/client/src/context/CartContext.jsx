@@ -1,8 +1,10 @@
 import { createContext, useContext, useState } from 'react';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext(null);
 
 export const CartProvider = ({ children }) => {
+  const { showToast } = useToast();
   const [items, setItems] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cart')) || []; }
     catch { return []; }
@@ -13,15 +15,15 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(newItems));
   };
 
-  // addItem(product, variant) — variant: { _id, color, storage, price, salePrice, stock }
-  const addItem = (product, variant) => {
+  // addItem(product, variant, qty) — qty mặc định 1
+  const addItem = (product, variant, qty = 1) => {
     if (!variant) return;
     const key = variant._id;
     const existing = items.find((i) => i.variantId === key);
     const price = variant.salePrice || variant.price;
 
     if (existing) {
-      save(items.map((i) => i.variantId === key ? { ...i, quantity: i.quantity + 1 } : i));
+      save(items.map((i) => i.variantId === key ? { ...i, quantity: i.quantity + qty } : i));
     } else {
       save([...items, {
         variantId: key,
@@ -32,9 +34,15 @@ export const CartProvider = ({ children }) => {
         color: variant.color,
         storage: variant.storage,
         price,
-        quantity: 1,
+        quantity: qty,
       }]);
     }
+
+    showToast({
+      message: `Đã thêm "${product.name}" vào giỏ hàng`,
+      type: 'success',
+      image: product.images?.[0] || null,
+    });
   };
 
   const removeItem = (variantId) => save(items.filter((i) => i.variantId !== variantId));

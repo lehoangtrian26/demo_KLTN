@@ -18,9 +18,15 @@ const returnRequestSchema = new mongoose.Schema({
     default: 'pending',
   },
   refundAmount: { type: Number, default: 0 },
-  refundMethod: { type: String },
-  adminNote: { type: String },
-  resolvedAt: { type: Date },
+  refundMethod: { type: String, enum: ['bank_transfer', 'cash', 'vnpay'] },
+  refundBankInfo: {
+    bankName:      { type: String },
+    accountNumber: { type: String },
+    accountHolder: { type: String },
+  },
+  refundRef:   { type: String }, // mã giao dịch hoàn tiền
+  adminNote:   { type: String },
+  resolvedAt:  { type: Date },
 }, { timestamps: true });
 
 module.exports = mongoose.model('ReturnRequest', returnRequestSchema);

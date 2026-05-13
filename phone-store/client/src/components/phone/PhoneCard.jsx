@@ -42,24 +42,24 @@ export default function PhoneCard({ phone }) {
       </Link>
 
       <div className="p-3 flex flex-col flex-1">
-        <Link to={`/products/${phone.slug}`} className="text-sm font-medium text-gray-800 hover:text-red-600 line-clamp-2 mb-1">
+        <Link to={`/products/${phone.slug}`} className="text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-red-600 line-clamp-2 mb-1">
           {phone.name}
         </Link>
 
         <div className="flex items-center gap-1 text-xs text-yellow-500 mb-2">
           <Star size={12} fill="currentColor" />
-          <span className="text-gray-500">{phone.rating} ({phone.reviewCount})</span>
+          <span className="text-gray-500 dark:text-gray-400">{phone.rating} ({phone.reviewCount})</span>
         </div>
 
         <div className="mt-auto">
           <div className="text-red-600 font-bold text-base">{price ? formatPrice(price) : 'Liên hệ'}</div>
           {originalPrice && (
-            <div className="text-gray-400 text-xs line-through">{formatPrice(originalPrice)}</div>
+            <div className="text-gray-400 dark:text-gray-500 text-xs line-through">{formatPrice(originalPrice)}</div>
           )}
         </div>
 
         <button
-          onClick={() => variant && addItem({ ...phone, _id: phone._id }, variant)}
+          onClick={() => variant && addItem(phone, variant)}
           disabled={!variant || variant.stock === 0}
           className="mt-3 w-full flex items-center justify-center gap-2 bg-red-600 text-white text-sm py-2 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
         >

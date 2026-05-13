@@ -1,19 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { holdStock } from '../api/cart';
+import { holdStock, clearCart as clearBackendCart, addCartItem } from '../api/cart';
 import { createOrder } from '../api/orders';
 import { formatPrice } from '../utils/formatPrice';
-import { MapPin, CreditCard, CheckCircle, ChevronRight, Truck, Banknote } from 'lucide-react';
+import { getWalletBalance } from '../api/wallet';
+import { MapPin, CreditCard, CheckCircle, ChevronRight, Truck, Banknote, Building2, Wallet } from 'lucide-react';
+import { createVNPayPaymentUrl } from '../api/payments';
 
 const STEPS = ['Địa chỉ', 'Thanh toán', 'Xác nhận'];
-
-const PAYMENT_METHODS = [
-  { value: 'cod', label: 'Thanh toán khi nhận hàng (COD)', icon: Banknote, desc: 'Thanh toán bằng tiền mặt khi nhận hàng' },
-  { value: 'bank_transfer', label: 'Chuyển khoản ngân hàng', icon: CreditCard, desc: 'Chuyển khoản trước, xác nhận sau 1-2 giờ' },
-];
 
 export default function CheckoutPage() {
   const [step, setStep] = useState(0);
@@ -21,6 +18,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [holdInfo, setHoldInfo] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
 
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
@@ -37,14 +35,34 @@ export default function CheckoutPage() {
     },
   });
 
+  useEffect(() => {
+    getWalletBalance().then((r) => setWalletBalance(r.data.data?.balance || 0)).catch(() => {});
+  }, []);
+
   const shippingFee = total >= 5000000 ? 0 : 30000;
   const grandTotal = total + shippingFee;
+
+  const PAYMENT_METHODS = [
+    { value: 'cod',           label: 'Thanh toán khi nhận hàng (COD)', icon: Banknote,  desc: 'Thanh toán bằng tiền mặt khi nhận hàng' },
+    { value: 'wallet',        label: `Ví điện tử`, icon: Wallet, desc: `Số dư: ${formatPrice(walletBalance)}`, badge: walletBalance >= grandTotal ? 'Đủ số dư' : 'Không đủ số dư', disabled: walletBalance < grandTotal },
+    { value: 'vnpay',         label: 'Thanh toán qua VNPay', icon: Building2, desc: 'ATM nội địa · Thẻ quốc tế · QR Code', badge: 'Nhanh & An toàn' },
+    { value: 'bank_transfer', label: 'Chuyển khoản ngân hàng', icon: CreditCard, desc: 'Chuyển khoản trước, xác nhận sau 1-2 giờ' },
+  ];
+
+  // Đồng bộ localStorage cart lên MongoDB trước khi checkout
+  const syncCartToBackend = async () => {
+    await clearBackendCart();
+    for (const item of items) {
+      await addCartItem(item.variantId, item.quantity);
+    }
+  };
 
   // Bước 1 → 2: lưu địa chỉ + hold stock
   const handleAddressNext = async (data) => {
     setLoading(true);
     setError('');
     try {
+      await syncCartToBackend();
       const res = await holdStock();
       setHoldInfo(res.data.data);
       setStep(1);
@@ -80,8 +98,26 @@ export default function CheckoutPage() {
         paymentMethod,
         note: addr.note,
       });
+
+      const order = res.data.data;
       clearCart();
-      navigate('/orders/success', { state: { order: res.data.data }, replace: true });
+
+      if (paymentMethod === 'vnpay') {
+        const payRes = await createVNPayPaymentUrl(order._id);
+        navigate('/payment/vnpay', {
+          state: { paymentUrl: payRes.data.data.paymentUrl, order },
+          replace: true,
+        });
+        return;
+      }
+
+      if (paymentMethod === 'bank_transfer') {
+        navigate('/payment/bank-transfer', { state: { order }, replace: true });
+        return;
+      }
+
+      // Ví điện tử hoặc COD → thành công ngay
+      navigate('/orders/success', { state: { order }, replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Đặt hàng thất bại, vui lòng thử lại');
       setStep(0);
@@ -90,10 +126,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!items.length) {
-    navigate('/cart');
-    return null;
-  }
+  if (!items.length) return <Navigate to="/cart" replace />;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -202,14 +235,22 @@ export default function CheckoutPage() {
               <div className="space-y-3 mb-6">
                 {PAYMENT_METHODS.map((m) => (
                   <label key={m.value}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-colors ${paymentMethod === m.value ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-colors ${m.disabled ? 'opacity-50 cursor-not-allowed border-gray-100 bg-gray-50' : 'cursor-pointer ' + (paymentMethod === m.value ? 'border-red-500 bg-red-50' : 'border-gray-200 hover:border-gray-300')}`}>
                     <input type="radio" name="payment" value={m.value}
                       checked={paymentMethod === m.value}
-                      onChange={() => setPaymentMethod(m.value)}
+                      disabled={m.disabled}
+                      onChange={() => !m.disabled && setPaymentMethod(m.value)}
                       className="accent-red-600" />
                     <m.icon size={24} className={paymentMethod === m.value ? 'text-red-600' : 'text-gray-400'} />
-                    <div>
-                      <p className="font-medium text-gray-800 text-sm">{m.label}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-gray-800 text-sm">{m.label}</p>
+                        {m.badge && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${m.disabled ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-700'}`}>
+                            {m.badge}
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs text-gray-500">{m.desc}</p>
                     </div>
                   </label>

@@ -1,5 +1,4 @@
-const mongoose = require('mongoose');
-const { Cart, ProductVariant, Product } = require('../models/index');
+const { Cart, ProductVariant } = require('../models/index');
 const { success, error } = require('../utils/response.utils');
 
 const HOLD_DURATION_MS = 15 * 60 * 1000; // 15 phút
@@ -141,25 +140,29 @@ const clearCart = async (req, res, next) => {
 
 // POST /api/cart/hold  — giữ hàng khi bắt đầu checkout
 const holdStock = async (req, res, next) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
   try {
-    const cart = await Cart.findOne({ userId: req.user._id }).session(session);
+    const cart = await Cart.findOne({ userId: req.user._id });
     if (!cart || !cart.items.length) return error(res, 'Giỏ hàng trống', 400);
 
     const holdExpiry = new Date(Date.now() + HOLD_DURATION_MS);
     const failures = [];
 
+    // Kiểm tra tất cả items trước khi hold
     for (const item of cart.items) {
       const available = await getAvailableStock(item.variantId.toString(), req.user._id);
       if (available < item.quantity) {
-        const variant = await ProductVariant.findById(item.variantId).populate('productId', 'name').lean();
-        failures.push({ variantId: item.variantId, name: variant?.productId?.name, available, requested: item.quantity });
+        const variant = await ProductVariant.findById(item.variantId)
+          .populate('productId', 'name').lean();
+        failures.push({
+          variantId: item.variantId,
+          name: variant?.productId?.name,
+          available,
+          requested: item.quantity,
+        });
       }
     }
 
     if (failures.length > 0) {
-      await session.abortTransaction();
       return res.status(400).json({
         success: false,
         message: 'Một số sản phẩm không đủ hàng',
@@ -169,15 +172,11 @@ const holdStock = async (req, res, next) => {
 
     // Đặt holdExpiry cho tất cả items
     cart.items.forEach((item) => { item.holdExpiry = holdExpiry; });
-    await cart.save({ session });
-    await session.commitTransaction();
+    await cart.save();
 
     return success(res, { data: { holdExpiry } }, 'Đã giữ hàng thành công, thanh toán trong 15 phút');
   } catch (err) {
-    await session.abortTransaction();
     next(err);
-  } finally {
-    session.endSession();
   }
 };
 

@@ -26,6 +26,8 @@ const userSchema = new mongoose.Schema({
     district: String,
     isDefault: { type: Boolean, default: false },
   }],
+  // Ví điện tử
+  walletBalance: { type: Number, default: 0, min: 0 },
   lastLoginAt: { type: Date },
 }, { timestamps: true });
 

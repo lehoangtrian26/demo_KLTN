@@ -29,6 +29,14 @@ app.use('/api/categories', require('./routes/category.routes'));
 app.use('/api/brands', require('./routes/brand.routes'));
 app.use('/api/cart', require('./routes/cart.routes'));
 app.use('/api/orders', require('./routes/order.routes'));
+app.use('/api/profile', require('./routes/profile.routes'));
+app.use('/api/reviews', require('./routes/review.routes'));
+app.use('/api/wishlist', require('./routes/wishlist.routes'));
+app.use('/api/coupons', require('./routes/coupon.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/returns', require('./routes/return.routes'));
+app.use('/api/wallet', require('./routes/wallet.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server đang chạy', env: process.env.NODE_ENV, timestamp: new Date() });

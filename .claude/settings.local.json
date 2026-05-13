@@ -7,7 +7,14 @@
       "PowerShell(Get-Process mongod -ErrorAction SilentlyContinue)",
       "PowerShell(Get-ChildItem \"C:\\\\\", \"D:\\\\\", \"$env:LOCALAPPDATA\" -Filter \"mongod.exe\" -Recurse -ErrorAction SilentlyContinue -Depth 5 | Select-Object FullName)",
       "PowerShell(Test-NetConnection -ComputerName localhost -Port 27017 -InformationLevel Quiet -WarningAction SilentlyContinue)",
-      "PowerShell(winget --version)"
+      "PowerShell(winget --version)",
+      "PowerShell(netstat -ano)",
+      "Bash(Get-ChildItem -Path \"d:\\\\demo\\\\phone-store\\\\client\\\\src\" -Recurse -Filter \"*.jsx\" -o Name)",
+      "PowerShell(Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep 1; Start-Process powershell -ArgumentList \"-NoExit -Command `\"cd d:\\\\demo\\\\phone-store\\\\server; npm run dev`\"\" -WindowStyle Normal; Start-Process powershell -ArgumentList \"-NoExit -Command `\"cd d:\\\\demo\\\\phone-store\\\\client; npm run dev`\"\" -WindowStyle Normal; Start-Sleep 7; $s=Test-NetConnection localhost -Port 5000 -InformationLevel Quiet -WarningAction SilentlyContinue; $c=Test-NetConnection localhost -Port 5173 -InformationLevel Quiet -WarningAction SilentlyContinue; Write-Output \"Server=$s Client=$c\")",
+      "Bash(node -e \"require\\('multer'\\); console.log\\('multer OK'\\)\")",
+      "Bash(not exist *)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"d:\\\\demo\\\\phone-store\\\\server\\\\uploads\\\\avatars\")",
+      "PowerShell(cd \"d:\\\\demo\\\\phone-store\\\\server\"; Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"cd 'd:\\\\demo\\\\phone-store\\\\server'; npm run dev\" -WindowStyle Normal)"
     ]
   }
 }

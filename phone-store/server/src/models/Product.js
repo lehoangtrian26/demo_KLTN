@@ -26,6 +26,11 @@ const productSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   tags: [String],
   warrantyMonths: { type: Number, default: 12 },
+  seo: {
+    metaTitle: { type: String, default: '' },
+    metaDescription: { type: String, default: '' },
+    keywords: [String],
+  },
 }, { timestamps: true });
 
 productSchema.index({ brandId: 1, categoryId: 1, status: 1 });

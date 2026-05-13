@@ -78,7 +78,7 @@ export default function OrderSuccessPage() {
         <div className="border-t mt-4 pt-4 text-sm">
           <span className="text-gray-500">Thanh toán: </span>
           <span className="font-medium text-gray-700">
-            {order.paymentMethod === 'cod' ? 'Thanh toán khi nhận hàng' : 'Chuyển khoản ngân hàng'}
+            {{ cod: 'Thanh toán khi nhận hàng (COD)', vnpay: 'VNPay', bank_transfer: 'Chuyển khoản ngân hàng' }[order.paymentMethod] || order.paymentMethod}
           </span>
         </div>
       </div>
